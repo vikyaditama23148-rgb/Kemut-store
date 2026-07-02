@@ -1,0 +1,42 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Inter:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-on-surface font-body antialiased;
+}
+
+.label-sm {
+  @apply text-xs font-semibold uppercase tracking-[0.1em] font-body;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center bg-primary text-on-primary px-8 py-4 label-sm transition-colors duration-300 hover:bg-gold disabled:opacity-40 disabled:pointer-events-none;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center border border-primary text-primary px-8 py-4 label-sm transition-colors duration-300 hover:bg-primary hover:text-on-primary;
+}
+
+.input-line {
+  @apply w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 px-0 py-3 text-base placeholder:text-on-surface-variant;
+}
