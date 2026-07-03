@@ -68,9 +68,13 @@ async function main() {
 
   for (const p of products) {
     const { image, ...rest } = p;
+    const payload = {
+      ...rest,
+      compare_at_price: rest.compare_at_price ?? null,
+    };
     const { data: product, error } = await supabase
       .from("products")
-      .upsert(rest, { onConflict: "slug" })
+      .upsert(payload, { onConflict: "slug" })
       .select()
       .single();
 
