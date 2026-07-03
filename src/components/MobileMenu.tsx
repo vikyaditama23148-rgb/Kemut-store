@@ -14,7 +14,7 @@ export default function MobileMenu({ links }: { links: NavLink[] }) {
       <button
         onClick={() => setOpen(!open)}
         aria-label="Toggle menu"
-        className="text-on-surface-variant hover:text-gold transition-colors"
+        style={{ color: "#1b1c1c" }}
       >
         <span className="material-symbols-outlined">
           {open ? "close" : "menu"}
@@ -24,25 +24,33 @@ export default function MobileMenu({ links }: { links: NavLink[] }) {
       {/* Overlay gelap */}
       {open && (
         <div
-          className="fixed inset-0 bg-black/60 z-40"
+          className="fixed inset-0 z-40"
+          style={{ backgroundColor: "rgba(0,0,0,0.75)" }}
           onClick={() => setOpen(false)}
         />
       )}
 
-      {/* Drawer — background hitam supaya kontras */}
+      {/* Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-72 bg-primary z-50 shadow-2xl transform transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-72 z-50 shadow-2xl transform transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
+        style={{ backgroundColor: "#111111" }}
       >
-        {/* Header drawer */}
-        <div className="flex justify-between items-center px-6 py-6 border-b border-white/10">
-          <span className="font-display text-lg font-bold tracking-tightest text-white">
+        {/* Header */}
+        <div
+          className="flex justify-between items-center px-6 py-6"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.15)" }}
+        >
+          <span
+            className="font-display text-lg font-bold tracking-tightest"
+            style={{ color: "#ffffff" }}
+          >
             KEMUT.STORE
           </span>
           <button
             onClick={() => setOpen(false)}
-            className="text-white/60 hover:text-gold transition-colors"
+            style={{ color: "rgba(255,255,255,0.6)" }}
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -55,7 +63,14 @@ export default function MobileMenu({ links }: { links: NavLink[] }) {
               key={link.href}
               href={link.href}
               onClick={() => setOpen(false)}
-              className="label-sm py-5 border-b border-white/10 text-white hover:text-gold transition-colors"
+              className="label-sm py-5 transition-colors"
+              style={{
+                color: "#ffffff",
+                borderBottom: "1px solid rgba(255,255,255,0.1)",
+                display: "block",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#d4af37")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#ffffff")}
             >
               {link.label}
             </Link>
