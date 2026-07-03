@@ -97,9 +97,20 @@ export async function deleteProduct(formData: FormData) {
 
 export async function updateOrderStatus(formData: FormData) {
   const supabase = createClient();
+  const admin = createAdminClient();
   const id = String(formData.get("id"));
   const status = String(formData.get("status"));
-  await supabase.from("orders").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
+
+  await admin.from("orders").update({
+    status,
+    updated_at: new Date().toISOString(),
+  }).eq("id", id);
+
+  // Saat order selesai, kredit saldo seller (5% platform fee dipotong otomatis)
+  if (status === "completed") {
+    await admin.rpc("credit_seller_balances", { order_id_input: id });
+  }
+
   revalidatePath("/admin/orders");
 }
 

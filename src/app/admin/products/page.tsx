@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { formatRupiah } from "@/lib/midtrans";
+import { formatRupiah } from "@/lib/stripe";
 import { deleteProduct } from "../actions";
 
 export default async function AdminProductsPage() {

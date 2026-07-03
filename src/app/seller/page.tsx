@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { formatRupiah } from "@/lib/midtrans";
+import { formatRupiah } from "@/lib/stripe";
 
 export default async function SellerOverviewPage() {
   const supabase = createClient();

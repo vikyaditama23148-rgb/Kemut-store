@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { formatRupiah } from "@/lib/midtrans";
+import { formatRupiah } from "@/lib/stripe";
 
 const statusLabel: Record<string, string> = {
   pending_payment: "Pending Payment",

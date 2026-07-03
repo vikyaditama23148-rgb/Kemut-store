@@ -2,13 +2,11 @@ import { NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getMidtransSnap } from "@/lib/midtrans";
+import { stripe } from "@/lib/stripe";
 
 export async function POST(req: Request) {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -16,6 +14,7 @@ export async function POST(req: Request) {
 
   const { addressId } = await req.json();
 
+  // Ambil alamat
   const { data: address } = await supabase
     .from("addresses")
     .select("*")
@@ -24,36 +23,41 @@ export async function POST(req: Request) {
     .single();
 
   if (!address) {
-    return NextResponse.json({ error: "Address not found" }, { status: 400 });
+    return NextResponse.json({ error: "Alamat tidak ditemukan" }, { status: 400 });
   }
 
+  // Ambil cart items
   const { data: cartItems } = await supabase
     .from("cart_items")
-    .select("*, products:product_id(*)")
+    .select("*, products:product_id(*, seller_id)")
     .eq("user_id", user.id);
 
   if (!cartItems || cartItems.length === 0) {
-    return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+    return NextResponse.json({ error: "Keranjang kosong" }, { status: 400 });
   }
 
-  // Verify stock and compute totals server-side (never trust client prices)
+  // Validasi stok server-side
   for (const item of cartItems) {
     if (!item.products || item.products.stock < item.quantity) {
       return NextResponse.json(
-        { error: `Insufficient stock for ${item.products?.name ?? "a product"}` },
+        { error: `Stok tidak mencukupi untuk ${item.products?.name ?? "produk"}` },
         { status: 400 }
       );
     }
   }
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.products!.price * item.quantity, 0);
+  // Hitung total (SELALU di server, tidak percaya client)
+  const subtotal = cartItems.reduce(
+    (sum, item) => sum + item.products!.price * item.quantity,
+    0
+  );
   const shippingFee = subtotal > 1_000_000 ? 0 : 50_000;
   const total = subtotal + shippingFee;
 
   const admin = createAdminClient();
   const orderNumber = `KMT-${Date.now().toString(36).toUpperCase()}-${nanoid(4).toUpperCase()}`;
-  const midtransOrderId = `${orderNumber}`;
 
+  // Buat order di database
   const { data: order, error: orderError } = await admin
     .from("orders")
     .insert({
@@ -65,15 +69,18 @@ export async function POST(req: Request) {
       shipping_fee: shippingFee,
       total,
       status: "pending_payment",
-      midtrans_order_id: midtransOrderId,
     })
     .select()
     .single();
 
   if (orderError || !order) {
-    return NextResponse.json({ error: orderError?.message ?? "Failed to create order" }, { status: 500 });
+    return NextResponse.json(
+      { error: orderError?.message ?? "Gagal membuat order" },
+      { status: 500 }
+    );
   }
 
+  // Simpan order items + kurangi stok
   const orderItemsPayload = cartItems.map((item) => ({
     order_id: order.id,
     product_id: item.product_id,
@@ -87,7 +94,6 @@ export async function POST(req: Request) {
 
   await admin.from("order_items").insert(orderItemsPayload);
 
-  // Decrement stock
   for (const item of cartItems) {
     await admin
       .from("products")
@@ -95,39 +101,31 @@ export async function POST(req: Request) {
       .eq("id", item.product_id);
   }
 
-  // Create Midtrans Snap transaction
-  const snap = getMidtransSnap();
-  const transaction = await snap.createTransaction({
-    transaction_details: {
-      order_id: midtransOrderId,
-      gross_amount: total,
+  // Buat Stripe Payment Intent
+  // Stripe pakai satuan terkecil mata uang — IDR tidak punya desimal, jadi langsung integer
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: Math.round(total), // IDR tidak punya sen
+    currency: "idr",
+    metadata: {
+      order_id: order.id,
+      order_number: orderNumber,
+      user_id: user.id,
     },
-    customer_details: {
-      first_name: address.recipient_name,
-      email: user.email,
-      phone: address.phone,
-      shipping_address: {
-        address: address.line1,
-        city: address.city,
-        postal_code: address.postal_code,
-      },
-    },
-    item_details: [
-      ...cartItems.map((item) => ({
-        id: item.product_id,
-        price: item.products!.price,
-        quantity: item.quantity,
-        name: item.products!.name.slice(0, 50),
-      })),
-      ...(shippingFee > 0 ? [{ id: "shipping", price: shippingFee, quantity: 1, name: "Shipping Fee" }] : []),
-    ],
+    description: `Pesanan ${orderNumber} — kemut.store`,
+    receipt_email: user.email,
   });
 
-  // Clear the cart now that the order + transaction exist
+  // Simpan stripe payment intent id ke order
+  await admin
+    .from("orders")
+    .update({ midtrans_order_id: paymentIntent.id }) // reuse kolom untuk simpan payment intent id
+    .eq("id", order.id);
+
+  // Kosongkan cart
   await admin.from("cart_items").delete().eq("user_id", user.id);
 
   return NextResponse.json({
-    snapToken: transaction.token,
+    clientSecret: paymentIntent.client_secret,
     orderNumber,
   });
 }
