@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { formatRupiah } from "@/lib/stripe";
+import { formatRupiah } from "@/lib/midtrans";
 import { saveBankInfo, requestWithdrawal } from "./actions";
 
 const statusLabel: Record<string, string> = {

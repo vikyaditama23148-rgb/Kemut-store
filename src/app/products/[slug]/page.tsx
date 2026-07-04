@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { formatRupiah } from "@/lib/stripe";
+import { formatRupiah } from "@/lib/midtrans";
 import { addToCart } from "@/app/cart/actions";
 import ProductCard from "@/components/ProductCard";
 

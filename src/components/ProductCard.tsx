@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/database";
-import { formatRupiah } from "@/lib/stripe";
+import { formatRupiah } from "@/lib/midtrans";
 
 export default function ProductCard({ product }: { product: Product }) {
   const image = product.product_images?.[0]?.url ?? "/placeholder-product.svg";
