@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import ScrollReveal from "@/components/ScrollReveal";
 
 export const metadata: Metadata = {
   title: "KEMUT.STORE | Unspoken Luxury",
   description: "Curated premium marketplace — elevated minimalism, unspoken luxury.",
+  keywords: "luxury fashion, premium marketplace, curated fashion, kemut store",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -17,10 +19,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>
+      <body className="bg-[#f8f6f3] antialiased">
         <Navbar />
         <main className="pt-[88px]">{children}</main>
         <Footer />
+        <ScrollReveal />
       </body>
     </html>
   );

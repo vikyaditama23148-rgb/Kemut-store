@@ -23,6 +23,7 @@ export default async function Navbar() {
 
   const navLinks = [
     { href: "/search", label: "Collections", show: true },
+    { href: "/search?sort=newest", label: "New Arrivals", show: true },
     { href: "/admin", label: "Admin", show: isAdmin },
     { href: "/seller", label: "Seller Dashboard", show: !isAdmin && sellerStatus === "approved" },
     { href: "/sell", label: "Jual Produk", show: !isAdmin && !sellerStatus && !!user },
@@ -30,45 +31,67 @@ export default async function Navbar() {
   ].filter((l) => l.show);
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl">
-      <div className="flex justify-between items-center px-5 md:px-16 py-6 max-w-[1440px] mx-auto">
+    <nav className="fixed top-0 w-full z-50 glass-nav border-b border-[#d4af37]/20 transition-all duration-300">
+      <div className="flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop py-6">
 
-        {/* Desktop nav kiri */}
-        <div className="hidden md:flex gap-8 items-center">
-          {navLinks.slice(0, -1).map((l) => (
-            <Link key={l.href} href={l.href} className="label-sm text-primary hover:text-gold transition-colors">
-              {l.label}
+        {/* Desktop — kiri */}
+        <div className="hidden md:flex items-center space-x-8">
+          <Link
+            href="/search"
+            className="label-caps text-[#444748] hover:text-black transition-colors border-b border-transparent hover:border-black pb-1"
+          >
+            Collections
+          </Link>
+          <Link
+            href="/search?sort=newest"
+            className="label-caps text-black border-b border-black pb-1"
+          >
+            New Arrivals
+          </Link>
+          {isAdmin && (
+            <Link href="/admin" className="label-caps text-[#d4af37] hover:text-black transition-colors">
+              Admin
             </Link>
-          ))}
+          )}
+          {!isAdmin && sellerStatus === "approved" && (
+            <Link href="/seller" className="label-caps text-[#d4af37] hover:text-black transition-colors">
+              My Store
+            </Link>
+          )}
+          {!isAdmin && !sellerStatus && user && (
+            <Link href="/sell" className="label-caps text-[#444748] hover:text-black transition-colors">
+              Sell
+            </Link>
+          )}
         </div>
 
-        {/* Logo tengah */}
-        <Link href="/" className="font-display text-2xl md:text-4xl tracking-tightest text-primary uppercase font-bold">
-          KEMUT.STORE
-        </Link>
+        {/* Logo — tengah absolute */}
+        <div className="absolute left-1/2 -translate-x-1/2">
+          <Link
+            href="/"
+            className="font-display font-bold text-xl md:text-2xl tracking-tighter text-black uppercase"
+          >
+            KEMUT.STORE
+          </Link>
+        </div>
 
-        {/* Kanan: cart + account (desktop) + hamburger (mobile) */}
-        <div className="flex items-center gap-4 md:gap-6">
-          {/* Cart — selalu tampil */}
-          <Link href="/cart" aria-label="Cart" className="relative text-on-surface-variant hover:text-gold transition-colors">
-            <span className="material-symbols-outlined">shopping_bag</span>
+        {/* Kanan */}
+        <div className="flex items-center space-x-5 md:space-x-6">
+          <Link href="/search" className="text-black hover:opacity-50 transition-opacity hidden md:block" aria-label="Search">
+            <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>search</span>
+          </Link>
+          <Link href={user ? "/account" : "/login"} className="text-black hover:opacity-50 transition-opacity hidden md:block" aria-label="Account">
+            <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>person</span>
+          </Link>
+          <Link href="/cart" className="relative text-black hover:opacity-50 transition-opacity" aria-label="Cart">
+            <span className="material-symbols-outlined" style={{ fontSize: "22px" }}>shopping_bag</span>
             {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-gold text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
+              <span className="absolute -top-1 -right-1 bg-black text-white text-[9px] w-4 h-4 flex items-center justify-center font-bold">
                 {cartCount}
               </span>
             )}
           </Link>
-
-          {/* Account icon — desktop only */}
-          <Link
-            href={user ? "/account" : "/login"}
-            aria-label="Account"
-            className="hidden md:block text-on-surface-variant hover:text-gold transition-colors"
-          >
-            <span className="material-symbols-outlined">person</span>
-          </Link>
-
-          {/* Hamburger — mobile only */}
+          {/* Hamburger mobile */}
           <MobileMenu links={navLinks} />
         </div>
       </div>

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Inter:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -15,28 +15,70 @@
   white-space: nowrap;
   word-wrap: normal;
   direction: ltr;
+  font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
-  @apply bg-background text-on-surface font-body antialiased;
+  @apply bg-[#f8f6f3] text-[#1a1a1a] antialiased;
+  -webkit-font-smoothing: antialiased;
 }
 
-.label-sm {
-  @apply text-xs font-semibold uppercase tracking-[0.1em] font-body;
+/* Glassmorphism navbar */
+.glass-nav {
+  background: rgba(248, 246, 243, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
+/* Marquee animation */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Editorial hover zoom */
+.editorial-hover img {
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.editorial-hover:hover img {
+  transform: scale(1.05);
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Buttons */
 .btn-primary {
-  @apply inline-flex items-center justify-center bg-primary text-on-primary px-8 py-4 label-sm transition-colors duration-300 hover:bg-gold disabled:opacity-40 disabled:pointer-events-none;
+  @apply inline-flex items-center justify-center bg-black text-white px-10 py-5 font-body text-[11px] font-semibold uppercase tracking-[0.15em] transition-all duration-300 hover:bg-[#d4af37];
 }
-
 .btn-ghost {
-  @apply inline-flex items-center justify-center border border-primary text-primary px-8 py-4 label-sm transition-colors duration-300 hover:bg-primary hover:text-on-primary;
+  @apply inline-flex items-center justify-center border border-black text-black px-10 py-5 font-body text-[11px] font-semibold uppercase tracking-[0.15em] transition-all duration-300 hover:bg-black hover:text-white;
+}
+.btn-ghost-white {
+  @apply inline-flex items-center justify-center border border-white text-white px-10 py-5 font-body text-[11px] font-semibold uppercase tracking-[0.15em] transition-all duration-300 hover:bg-white hover:text-black;
 }
 
+/* Input line style */
 .input-line {
-  @apply w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 px-0 py-3 text-base placeholder:text-on-surface-variant;
+  @apply w-full bg-transparent border-0 border-b border-[#e8e4de] focus:border-black focus:ring-0 px-0 py-3 text-base placeholder:text-[#747878] outline-none transition-colors duration-200;
+}
+
+/* Label caps utility */
+.label-caps {
+  @apply text-[11px] font-semibold uppercase tracking-[0.15em] font-body;
 }
