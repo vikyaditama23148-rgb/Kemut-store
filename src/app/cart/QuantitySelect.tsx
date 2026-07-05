@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { updateCartItem } from "./actions";
 
 export default function QuantitySelect({
@@ -11,21 +12,41 @@ export default function QuantitySelect({
   quantity: number;
   max: number;
 }) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function submit(newQty: number) {
+    if (newQty < 1 || newQty > max) return;
+    if (inputRef.current) inputRef.current.value = String(newQty);
+    formRef.current?.requestSubmit();
+  }
+
   return (
-    <form action={updateCartItem} className="flex items-center gap-2">
+    <form ref={formRef} action={updateCartItem} className="flex items-center">
       <input type="hidden" name="item_id" value={itemId} />
-      <select
-        name="quantity"
-        defaultValue={quantity}
-        onChange={(e) => e.currentTarget.form?.requestSubmit()}
-        className="border border-outline-variant px-3 py-2 text-sm bg-white"
-      >
-        {Array.from({ length: Math.max(max, quantity, 1) }, (_, i) => i + 1).map((n) => (
-          <option key={n} value={n}>
-            {n}
-          </option>
-        ))}
-      </select>
+      <input ref={inputRef} type="hidden" name="quantity" defaultValue={quantity} />
+
+      <div className="flex items-center border border-[#e8e4de] h-10">
+        <button
+          type="button"
+          onClick={() => submit(quantity - 1)}
+          disabled={quantity <= 1}
+          className="px-4 h-full hover:bg-[#efeeeb] transition-colors disabled:opacity-30 label-caps"
+        >
+          −
+        </button>
+        <span className="px-5 h-full flex items-center border-x border-[#e8e4de] label-caps min-w-[40px] justify-center">
+          {quantity}
+        </span>
+        <button
+          type="button"
+          onClick={() => submit(quantity + 1)}
+          disabled={quantity >= max}
+          className="px-4 h-full hover:bg-[#efeeeb] transition-colors disabled:opacity-30 label-caps"
+        >
+          +
+        </button>
+      </div>
     </form>
   );
 }

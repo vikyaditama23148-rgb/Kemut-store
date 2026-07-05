@@ -6,15 +6,12 @@ import { useRouter } from "next/navigation";
 declare global {
   interface Window {
     snap: {
-      pay: (
-        token: string,
-        options: {
-          onSuccess: (result: unknown) => void;
-          onPending: (result: unknown) => void;
-          onError: (result: unknown) => void;
-          onClose: () => void;
-        }
-      ) => void;
+      pay: (token: string, options: {
+        onSuccess: (result: unknown) => void;
+        onPending: (result: unknown) => void;
+        onError: (result: unknown) => void;
+        onClose: () => void;
+      }) => void;
     };
   }
 }
@@ -47,10 +44,9 @@ export default function CheckoutPayButton({ addressId }: { addressId: string }) 
 
   async function handlePay() {
     if (!snapReady) {
-      setError("Payment gateway belum siap, tunggu sebentar lalu coba lagi.");
+      setError("Payment gateway belum siap, coba lagi.");
       return;
     }
-
     setLoading(true);
     setError(null);
 
@@ -60,31 +56,18 @@ export default function CheckoutPayButton({ addressId }: { addressId: string }) 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ addressId }),
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || `Error ${res.status}`);
-      }
-
-      if (!data.snapToken) {
-        throw new Error("Token pembayaran tidak diterima dari server.");
-      }
+      if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
+      if (!data.snapToken) throw new Error("Token pembayaran tidak diterima.");
 
       window.snap.pay(data.snapToken, {
-        onSuccess: () => {
-          router.push(`/checkout/success?order=${data.orderNumber}`);
-        },
-        onPending: () => {
-          router.push(`/checkout/success?order=${data.orderNumber}`);
-        },
+        onSuccess: () => router.push(`/checkout/success?order=${data.orderNumber}`),
+        onPending: () => router.push(`/checkout/success?order=${data.orderNumber}`),
         onError: () => {
           setError("Pembayaran gagal. Silakan coba lagi.");
           setLoading(false);
         },
-        onClose: () => {
-          setLoading(false);
-        },
+        onClose: () => setLoading(false),
       });
     } catch (e: any) {
       setError(e.message ?? "Terjadi kesalahan. Silakan coba lagi.");
@@ -93,25 +76,33 @@ export default function CheckoutPayButton({ addressId }: { addressId: string }) 
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 p-3 rounded text-sm text-red-700">
+        <div className="p-4 border border-[#ba1a1a]/30 bg-[#ffdad6] text-[#93000a] text-sm label-caps">
           {error}
         </div>
       )}
       {!snapReady && !error && (
-        <p className="text-xs text-on-surface-variant animate-pulse">
+        <p className="label-caps text-[#747878] text-center animate-pulse">
           Memuat payment gateway...
         </p>
       )}
       <button
         onClick={handlePay}
         disabled={loading || !snapReady}
-        className="btn-primary w-full"
+        className="w-full bg-black text-white py-6 label-caps tracking-[0.2em]
+          hover:bg-[#d4af37] transition-all duration-500 active:scale-[0.98]
+          disabled:opacity-40 disabled:pointer-events-none
+          flex items-center justify-center gap-3 group"
       >
-        {loading ? "Memproses..." : !snapReady ? "Memuat..." : "Bayar Sekarang"}
+        {loading ? "MEMPROSES..." : !snapReady ? "MEMUAT..." : "PAY NOW"}
+        {!loading && snapReady && (
+          <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">
+            arrow_forward
+          </span>
+        )}
       </button>
-      <p className="text-xs text-on-surface-variant text-center">
+      <p className="label-caps text-[#747878] text-center text-[10px]">
         Pembayaran diproses secara aman oleh Midtrans
       </p>
     </div>
